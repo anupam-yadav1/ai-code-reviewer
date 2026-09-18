@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
+const reviewRoutes = require('./routes/reviewRoutes');
 
 const app = express();
 app.use(cors());
@@ -16,5 +17,5 @@ mongoose.connect(process.env.MONGO_URI)
 app.get('/', (req, res) => {
   res.send('AI Code Reviewer API is running');
 });
-
+app.use('/api/review', reviewRoutes);
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
