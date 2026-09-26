@@ -1,29 +1,33 @@
 const express = require('express');
 const router = express.Router();
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const buildReviewPrompt = require('../utils/llmPrompt');
 
-router.post('/', (req, res) => {
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+router.post('/', async (req, res) => {
   const { code, language } = req.body;
 
   if (!code || !language) {
     return res.status(400).json({ error: 'Code and language are required' });
   }
 
-  // Dummy response for now — real AI review comes in Day 5
-  const dummyReview = {
-    bugs: [
-      'This is a placeholder bug — real analysis coming soon',
-    ],
-    suggestions: [
-      'Consider adding comments to explain complex logic',
-    ],
-    complexity: {
-      time: 'O(n)',
-      space: 'O(1)',
-    },
-    qualityScore: 75,
-  };
+  try {
+    const prompt = buildReviewPrompt(code, language);
 
-  res.json(dummyReview);
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.8-flash' });
+    const result = await model.generateContent(prompt);
+    const rawText = result.response.text();
+
+    const cleaned = rawText.replace(/```json|```/g, '').trim();
+
+    const review = JSON.parse(cleaned);
+    res.json(review);
+
+  } catch (error) {
+    console.error('AI review error:', error.message);
+    res.status(500).json({ error: 'Failed to generate review' });
+  }
 });
 
-module.exports = router;
+module.exports = router; 
