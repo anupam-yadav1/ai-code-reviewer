@@ -11,7 +11,9 @@ router.post('/', async (req, res) => {
   if (!code || !language) {
     return res.status(400).json({ error: 'Code and language are required' });
   }
-
+  if (code.length > 10000) {
+    return res.status(400).json({ error: 'Code is too long. Please limit to 10,000 characters.' });
+  }
   try {
     const prompt = buildReviewPrompt(code, language);
 

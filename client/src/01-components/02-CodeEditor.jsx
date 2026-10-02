@@ -10,15 +10,19 @@ function CodeEditor() {
   const [error, setError] = useState('');
 
   const handleReview = async () => {
+    if (!code.trim() || code.trim() === '// Write or paste your code here') {
+      setError('Please write or paste some code first.');
+      return;
+    }
     setLoading(true);
     setError('');
     setResult(null);
     try {
       const data = await reviewCode(code, language);
       setResult(data);
-    } catch (err) {
-      setError('Failed to get review. Please try again.');
-    } finally {
+        } catch (err) {
+      setError(err.response?.data?.error || 'Failed to get review. Please try again.');
+    }finally {
       setLoading(false);
     }
   };
